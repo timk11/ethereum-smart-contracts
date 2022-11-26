@@ -1,4 +1,4 @@
-pragma solidity 0.6.0;
+pragma solidity ^0.8.0;
 
 // ------------------------------------------------------------------------------------
 // This contract allows for the storage of a brief medical summary consisting of a list
@@ -7,17 +7,16 @@ pragma solidity 0.6.0;
 // providers in order to control who can modify and view their data. There are no
 // restrictions on who can register as a provider and patients can nominate themselves
 // as their own providers if they so wish. All the items are entered as free text. The 
-// contract as it stands will not work in Remix, as each free text string needs to be
-// converted into a bytes32 value by a front-end app for storage, and then back to a
-// string for viewing.
+// functions registerPatient, registerProvider and linkProvider need to be called
+// before clinical items can be entered.
 // ------------------------------------------------------------------------------------
 
 contract MedicalSummary {
     
     struct summary {
-        bytes32[] conditions;
-        bytes32[] medications;
-        bytes32[] allergies;
+        string[] conditions;
+        string[] medications;
+        string[] allergies;
     }
     
     mapping(address=>uint) patientMembership;
@@ -40,6 +39,7 @@ contract MedicalSummary {
                 answer = true;
             }
         }
+        return answer;
     }
     
     modifier onlyLinkedProvider (address _pt) {
@@ -73,17 +73,17 @@ contract MedicalSummary {
         return linkedProviders[msg.sender];
     }
     
-    function addCondition (address _pt, bytes32 _condition) public onlyLinkedProvider (_pt) {
+    function addCondition (address _pt, string memory _condition) public onlyLinkedProvider (_pt) {
         patientSummary[_pt].conditions.push(_condition);
         entryCount++;
     }
     
-    function addMedication (address _pt, bytes32 _medication) public onlyLinkedProvider (_pt) {
+    function addMedication (address _pt, string memory _medication) public onlyLinkedProvider (_pt) {
         patientSummary[_pt].medications.push(_medication);
         entryCount++;
     }
     
-    function addAllergy (address _pt, bytes32 _allergy) public onlyLinkedProvider (_pt) {
+    function addAllergy (address _pt, string memory _allergy) public onlyLinkedProvider (_pt) {
         patientSummary[_pt].allergies.push(_allergy);
         entryCount++;
     }
@@ -109,11 +109,11 @@ contract MedicalSummary {
         entryCount++;
     }
     
-    function viewOwnSummary () public view onlyPatient returns (bytes32[] memory, bytes32[] memory, bytes32[] memory) {
+    function viewOwnSummary () public view onlyPatient returns (string[] memory, string[] memory, string[] memory) {
         return (patientSummary[msg.sender].conditions, patientSummary[msg.sender].medications, patientSummary[msg.sender].allergies);
     }
     
-    function viewPatientSummary (address _pt) public view onlyLinkedProvider (_pt) returns (bytes32[] memory, bytes32[] memory, bytes32[] memory) {
+    function viewPatientSummary (address _pt) public view onlyLinkedProvider (_pt) returns (string[] memory, string[] memory, string[] memory) {
         return (patientSummary[_pt].conditions, patientSummary[_pt].medications, patientSummary[_pt].allergies);
     }
     
